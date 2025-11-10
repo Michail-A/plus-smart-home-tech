@@ -10,7 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Properties;
 
 @Configuration
-public class KafkaProducerConfig {
+public class KafkaProducerConfig implements AutoCloseable {
+
+    private Producer<String, SpecificRecordBase> producer;
 
     @Bean
     public Producer<String, SpecificRecordBase> kafkaProducer() {
@@ -21,6 +23,11 @@ public class KafkaProducerConfig {
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                 "ru.yandex.practicum.serializer.GeneralAvroSerializer");
 
-        return new KafkaProducer<>(config);
+        return producer = new KafkaProducer<>(config);
+    }
+
+    @Override
+    public void close() throws Exception {
+        producer.close();
     }
 }

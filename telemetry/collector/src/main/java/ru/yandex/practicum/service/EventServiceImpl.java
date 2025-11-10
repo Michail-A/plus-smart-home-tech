@@ -2,8 +2,10 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
@@ -26,7 +28,19 @@ public class EventServiceImpl implements EventService {
         Long timestamp = message.getTimestamp().toEpochMilli();
         ProducerRecord<String, SpecificRecordBase> record =
                 new ProducerRecord<>(topic, null, timestamp, hubId, message);
-        producer.send(record);
+        producer.send(record, new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata metadata, Exception exception) {
+                if (exception == null) {
+                    System.out.println("Сообщение отправлено успешно. Topic: " + metadata.topic() +
+                            ", Partition: " + metadata.partition() +
+                            ", Offset: " + metadata.offset());
+                } else {
+                    System.err.println("Ошибка при отправке сообщения: " + exception.getMessage());
+                    exception.printStackTrace();
+                }
+            }
+        });
     }
 
     public void collectHubEvent(HubEvent event) {
@@ -36,6 +50,17 @@ public class EventServiceImpl implements EventService {
         Long timestamp = message.getTimestamp().toEpochMilli();
         ProducerRecord<String, SpecificRecordBase> record =
                 new ProducerRecord<>(topic, null, timestamp, hubId, message);
-        producer.send(record);
-    }
-}
+        producer.send(record, new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata metadata, Exception exception) {
+                if (exception == null) {
+                    System.out.println("Сообщение отправлено успешно. Topic: " + metadata.topic() +
+                            ", Partition: " + metadata.partition() +
+                            ", Offset: " + metadata.offset());
+                } else {
+                    System.err.println("Ошибка при отправке сообщения: " + exception.getMessage());
+                    exception.printStackTrace();
+                }
+            }
+        });
+}}
