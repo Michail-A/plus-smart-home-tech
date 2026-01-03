@@ -1,11 +1,13 @@
 package ru.yandex.practicum.model.hub;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.List;
 
 @Getter
+@Setter
 @ToString(callSuper = true)
 public class ScenarioAddedEvent extends HubEvent{
 
